@@ -26,48 +26,77 @@ long long JSnCr(long long n, long long k) {
 }
 
 NSString *JSExpandBinomial(NSString *x, NSString *y, long long power) {
-	long long k = 0;
-	NSMutableString *result = [[NSMutableString alloc] initWithString:@""];
-	BOOL valueOnePresent;
-	BOOL valueTwoPresent;
-	for (long long i = power + 1; i > 0; i--) {
-		[result appendString:@"["];
-		if (JSnCr(power, k) != 1) {
-			[result appendString:@"("];
-			[result appendString:[NSString stringWithFormat:@"%d", JSnCr(power, k)]];
-			[result appendString:@")"];
-		}
-		valueOnePresent = NO;
-		if (power-k != 0) {
-			valueOnePresent = YES;
-			if ((power-k) == 1) {
-				[result appendString:x];
-			}
-			else {
-				[result appendString:x];
-				[result appendString:JSSuperScriptFromNumberString([NSString stringWithFormat:@"%d", power-k])];
-			}
-		}
-		valueTwoPresent = NO;
-		if (k != 0) {
-			valueTwoPresent = YES;
-			if (valueOnePresent && valueTwoPresent)
-				[result appendString:@"."];
-			if (k == 1) {
-				[result appendString:y];
-			}
-			else {
-				[result appendString:y];
-				[result appendString:JSSuperScriptFromNumberString([NSString stringWithFormat:@"%d", k])];
-			}
-		}
-		[result appendString:@"]"];
-		if (i != 1) {
-			[result appendString:@" + "];
-		}
-		k++;
+	
+	NSMutableString *result = [NSMutableString string];
+	
+	NSMutableString *xVariable = [NSMutableString stringWithString:x];
+	NSMutableString *yVariable = [NSMutableString stringWithString:y];
+	
+	double xCoeff = 1;
+	double yCoeff = 1;
+	
+	NSScanner *xScanner = [[NSScanner alloc] initWithString:xVariable];
+	NSScanner *yScanner = [[NSScanner alloc] initWithString:yVariable];
+	xScanner.locale = [NSLocale currentLocale];
+	yScanner.locale = [NSLocale currentLocale];
+	
+	if (![xScanner scanDouble:&xCoeff]) xCoeff = 1;
+	if (![yScanner scanDouble:&yCoeff]) yCoeff = 1;
+	
+	[xScanner release];
+	[yScanner release];
+	
+	NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+	formatter.maximumSignificantDigits = NSUIntegerMax;
+	
+	NSString *xCoeffString = [formatter stringFromNumber:@(xCoeff)];
+	NSString *yCoeffString = [formatter stringFromNumber:@(yCoeff)];
+	
+	[xVariable replaceOccurrencesOfString:xCoeffString withString:@"" options:NSDiacriticInsensitiveSearch range:NSMakeRange(0, xVariable.length)];
+	[yVariable replaceOccurrencesOfString:yCoeffString withString:@"" options:NSDiacriticInsensitiveSearch range:NSMakeRange(0, yVariable.length)];
+	
+	if ([xVariable isEqualToString:yVariable]) {
+		double addedCoeff = xCoeff + yCoeff;
+		double powCoeff = pow(addedCoeff, power);
+		return [NSString stringWithFormat:@"%@%@%@", [formatter stringFromNumber:@(powCoeff)], xVariable, JSSuperScriptFromNumberString([NSString stringWithFormat:@"%lld", power])];
 	}
-	return [result autorelease];
+	
+	int n = power;
+	for (int k = 0; k <= n; k++) {
+		//Get nCr part
+		long long nCrPart = JSnCr(n, k);
+		
+		//Get x-power and expanded coefficient
+		long long xPower = n - k;
+		double xMultCoeff = pow(xCoeff, xPower);
+		
+		//Get y-power and expanded coefficient
+		long long yPower = k;
+		double yMultCoeff = pow(yCoeff, yPower);
+		
+		//Get the final, expanded coefficient
+		double finalCoeff = nCrPart * xMultCoeff * yMultCoeff;
+		
+		NSString *finalCoeffString = [formatter stringFromNumber:@(finalCoeff)];
+		if (finalCoeff == 1.0) finalCoeffString = @"";
+		else if (finalCoeff == -1.0) finalCoeffString = @"-";
+		
+		[result appendString:finalCoeffString];
+		if (xPower != 0) {
+			[result appendString:xVariable];
+			if (xPower != 1) [result appendString:JSSuperScriptFromNumberString([NSString stringWithFormat:@"%lld", xPower])];
+		}
+		if (yPower != 0) {
+			[result appendString:yVariable];
+			if (yPower != 1) [result appendString:JSSuperScriptFromNumberString([NSString stringWithFormat:@"%lld", yPower])];
+		}
+		
+		if (k != n) [result appendString:@" + "];
+	}
+	
+	[formatter release];
+	
+	return result;
 }
 
 NSString *JSSuperScriptFromNumberString(NSString *originalString) {
@@ -75,40 +104,41 @@ NSString *JSSuperScriptFromNumberString(NSString *originalString) {
 	NSMutableString *result = [[[NSMutableString alloc] initWithString:@""] autorelease];
 	for (int i = 0; i < [originalString length]; i++) {
 		range = NSMakeRange(i, 1);
-		switch ([[originalString substringWithRange:range] intValue]) {
-			case 1:
+		switch ([[originalString substringWithRange:range] characterAtIndex:0]) {
+			case '1':
 				[result appendString:@"¹"];
 				break;
-			case 2:
+			case '2':
 				[result appendString:@"²"];
 				break;
-			case 3:
+			case '3':
 				[result appendString:@"³"];
 				break;
-			case 4:
+			case '4':
 				[result appendString:@"⁴"];
 				break;
-			case 5:
+			case '5':
 				[result appendString:@"⁵"];
 				break;
-			case 6:
+			case '6':
 				[result appendString:@"⁶"];
 				break;
-			case 7:
+			case '7':
 				[result appendString:@"⁷"];
 				break;
-			case 8:
+			case '8':
 				[result appendString:@"⁸"];
 				break;
-			case 9:
+			case '9':
 				[result appendString:@"⁹"];
 				break;
-			case 0:
+			case '0':
 				[result appendString:@"⁰"];
 				break;
 			default:
 				break;
 		}
 	}
+	//[pool drain];
 	return (NSString *)result;
 }

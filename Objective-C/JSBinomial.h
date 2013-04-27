@@ -8,7 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol BinomialExpanderDelegate
+- (void)conversionStringDidChange:(NSString *)conversionString;
+@end
+
 long long JSFactorialFromLong(long long number);
 long long JSnCr(long long n, long long k);
 NSString *JSExpandBinomial(NSString *x, NSString *y, long long power);
 NSString *JSSuperScriptFromNumberString(NSString *originalString);
+
