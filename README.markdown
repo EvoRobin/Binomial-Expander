@@ -13,9 +13,11 @@ Suppose you have a binomial:
 ![Example binomial](http://gyazo.com/d3219f4eb69c21d41f03a116830ca2ee.png "Example binomial")
 
 Java:
+
 	String solvedBinomial = expandBinomial("x", "y", 7);
 
 Objective-C:
+
 	#import "JSBinomial.h"
 	
 	NSString *solvedBinomial = JSExpandBinomial(@"x", @"y", 7);
